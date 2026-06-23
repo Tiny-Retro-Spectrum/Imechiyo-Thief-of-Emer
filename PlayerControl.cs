@@ -6,17 +6,17 @@ public class PlayerControl : MonoBehaviour
 {
     public Transform playerObj;
     public Rigidbody2D RB;
+    public Rigidbody2D.SlideMovement SM = new Rigidbody2D.SlideMovement();
+    public Rigidbody2D.SlideResults SR;
     public Transform mainCamera;
     public Collider2D capsCollider;
     float FOV = 10;
-    Vector3 movement = new Vector3 (0, 0, 0);
-    Vector3 velocity = new Vector3 (0, 0, 0);
+    Vector3 movement = Vector3.zero;
+    Vector3 velocity = Vector3.zero;
     float speed;
     public float walkSpeed;
     public float runSpeed;
     public float crouchSpeed;
-    public Vector2 a = new Vector2(1,1).normalized;
-    public Vector2 b;
 
     float fallSpeed = 0.5f; 
     public bool grounded;
@@ -126,7 +126,10 @@ public class PlayerControl : MonoBehaviour
             }
             velocity.y = 0;
             grounded = true;
-            GroundSnap();
+            if (readyToJump != false)
+            {
+                GroundSnap();
+            }
         }
         else if (groundCheckHit == false && grounded != false)
         {
@@ -147,23 +150,23 @@ public class PlayerControl : MonoBehaviour
         {
             if (grounded && !OnSlope())
             {
-                playerObj.position += movement;
+                SR = RB.Slide(movement, Time.deltaTime, SM);
             }
             else if(grounded && OnSlope())
             {   // movement is snapped to slope as long as the player isn't jumping
                 if (readyToJump != false) 
                 {
-                    playerObj.position += SlopeMove(movement);
+                    SR = RB.Slide(movement, Time.deltaTime, SM);
                 }
                 else
                 {
-                    playerObj.position += movement;
+                    SR = RB.Slide(movement, Time.deltaTime, SM);
                 }
             }
             else if (!grounded)
             {
                 movement += velocity * Time.deltaTime;
-                playerObj.position += movement;
+                SR = RB.Slide(movement, Time.deltaTime, SM);
             }
         }
     }
@@ -177,7 +180,11 @@ public class PlayerControl : MonoBehaviour
 
     void Update()
     {
-        Move();
         mainCamera.position = playerObj.position + new Vector3(movement.x * 10, movement.y * 10, -FOV);
+    }
+
+    void FixedUpdate()
+    {
+        Move();
     }
 }

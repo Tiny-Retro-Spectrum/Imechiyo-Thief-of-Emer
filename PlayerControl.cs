@@ -5,7 +5,7 @@ using UnityEngine;
 public class PlayerControl : MonoBehaviour
 {
     public Transform playerObj;
-    // public CharacterController CC; the character controller component isn't designed for 2D, will have to find a replacement
+    public Rigidbody2D RB;
     public Transform mainCamera;
     public Collider2D capsCollider;
     float FOV = 10;
@@ -55,17 +55,17 @@ public class PlayerControl : MonoBehaviour
         walking,
         running,
         crouching,
-        airborne
-            // add mantling later
+        airborne,
+        mantling
     }
 
     void GroundSnap() // snaps player relative to groundcheck position if the player isn't aligned to the ground properly
     {
         Vector3 a = playerObj.position;
         Vector3 b = ToVector3D(groundCheckHit.point);
-        if (a.y != b.y + 1)
+        if (a.y != b.y + 0.6f)
         {
-            Vector3 c = new Vector3(0, a.y - (b.y + 1), 0);
+            Vector3 c = new Vector3(0, a.y - (b.y + 0.6f), 0);
             playerObj.position -= c;
         }
     }
@@ -117,7 +117,7 @@ public class PlayerControl : MonoBehaviour
 
     void GroundCheck()
     {   // creates a raycheck from the position of the capsule collider
-        groundCheckHit = Physics2D.Raycast(ToVector2D(playerObj.position), Vector2.down, 1.1f, ground, -1f, 1f);
+        groundCheckHit = Physics2D.Raycast(ToVector2D(playerObj.position), Vector2.down, 0.6f, ground, -1f, 1f);
         if (groundCheckHit != false && grounded == false)
         {
             if (velocity.y < 0)

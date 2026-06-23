@@ -95,7 +95,7 @@ public class PlayerControl : MonoBehaviour
         if (grounded)
         {
             velocity.y = 0;
-            movement.x = Input.GetAxis("Horizontal") * speed * Time.deltaTime;
+            movement.x = Input.GetAxis("Horizontal") * speed;
             if (Input.GetButtonDown("Jump") && readyToJump != false)
             {
                 grounded = false;
@@ -111,7 +111,7 @@ public class PlayerControl : MonoBehaviour
         }
         else if (!grounded)
         {
-            velocity.y -= fallSpeed * Time.deltaTime;
+            velocity.y -= fallSpeed;
         }
     }
 
@@ -148,26 +148,16 @@ public class PlayerControl : MonoBehaviour
         GetInput();
         if (movement.magnitude != 0 || velocity.y != 0) // updates movement only if the player isn't still or has no momentum
         {
-            if (grounded && !OnSlope())
+            if (grounded)
             {
                 SR = RB.Slide(movement, Time.deltaTime, SM);
-            }
-            else if(grounded && OnSlope())
-            {   // movement is snapped to slope as long as the player isn't jumping
-                if (readyToJump != false) 
-                {
-                    SR = RB.Slide(movement, Time.deltaTime, SM);
-                }
-                else
-                {
-                    SR = RB.Slide(movement, Time.deltaTime, SM);
-                }
             }
             else if (!grounded)
             {
                 movement += velocity * Time.deltaTime;
                 SR = RB.Slide(movement, Time.deltaTime, SM);
             }
+            RB.MovePosition(SR.position);
         }
     }
 
@@ -180,7 +170,7 @@ public class PlayerControl : MonoBehaviour
 
     void Update()
     {
-        mainCamera.position = playerObj.position + new Vector3(movement.x * 10, movement.y * 10, -FOV);
+        mainCamera.position = playerObj.position + new Vector3(movement.x * 10 * Time.deltaTime, movement.y * 10 * Time.deltaTime, -FOV);
     }
 
     void FixedUpdate()

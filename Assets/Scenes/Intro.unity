@@ -788,6 +788,11 @@ MonoBehaviour:
   - {fileID: -7780745865734785462, guid: f2c7f204f53d6459a943d97bdde340ff, type: 3}
   - {fileID: -8249384539368140790, guid: f2c7f204f53d6459a943d97bdde340ff, type: 3}
   - {fileID: -2835691137233479770, guid: f2c7f204f53d6459a943d97bdde340ff, type: 3}
+  attack_frames:
+  - {fileID: -4583506384733517218, guid: cc42cb7b8277e480a97fe9438cf2ed8e, type: 3}
+  - {fileID: 2177957865319102786, guid: cc42cb7b8277e480a97fe9438cf2ed8e, type: 3}
+  - {fileID: -8173176560542509011, guid: cc42cb7b8277e480a97fe9438cf2ed8e, type: 3}
+  - {fileID: -8323827028151490015, guid: cc42cb7b8277e480a97fe9438cf2ed8e, type: 3}
 --- !u!60 &1731531426
 PolygonCollider2D:
   m_ObjectHideFlags: 0

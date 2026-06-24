@@ -25,6 +25,7 @@ public class PlayerControl : MonoBehaviour
     public Sprite[] jump_frames;
     public Sprite[] sneak_frames;
     public Sprite[] crouch_idle_frames;
+    public Sprite[] attack_frames;
 
     Rigidbody2D rigid_body;
     SpriteRenderer sprite_renderer;
@@ -42,10 +43,12 @@ public class PlayerControl : MonoBehaviour
     float jump_frame_time = 1f / 11f;
     float sneak_frame_time = 1f / 11f;
     float crouch_idle_frame_time = 1f / 11f;
+    float attack_frame_time = 1f / 11f;
     bool flipped = false;
     bool crouched = false;
     PlayerState state = PlayerState.Idle;
     PlayerState last_state = PlayerState.Idle;
+    PlayerState return_state = PlayerState.Idle;
 
     void Start()
     {
@@ -90,6 +93,19 @@ public class PlayerControl : MonoBehaviour
             cur_frame = (cur_frame + 1) % crouch_idle_frames.Length;
             last_frame_time = Time.fixedTime;
             sprite_renderer.sprite = crouch_idle_frames[cur_frame];
+        }
+        else if (state == PlayerState.Attack && Time.fixedTime - last_frame_time >= attack_frame_time)
+        {
+            if (cur_frame >= attack_frames.Length - 1)
+            {
+                state = return_state;
+            }
+            else
+            {
+                cur_frame = (cur_frame + 1) % attack_frames.Length;
+                last_frame_time = Time.fixedTime;
+                sprite_renderer.sprite = attack_frames[cur_frame];
+            }
         }
 
         last_state = state;
@@ -143,7 +159,10 @@ public class PlayerControl : MonoBehaviour
 
         if (jumping)
         {
-            state = PlayerState.Jump;
+            if (state != PlayerState.Attack)
+                state = PlayerState.Jump;
+            else
+                return_state = PlayerState.Jump;
         }
         else if (state == PlayerState.Jump && touching_ground)
         {
@@ -159,18 +178,38 @@ public class PlayerControl : MonoBehaviour
             {
                 run_frame_time = 1f / (1.7f * Mathf.Abs(rigid_body.linearVelocityX));
                 if (!crouched)
-                    state = PlayerState.Run;
+                {
+                    if (state != PlayerState.Attack)
+                        state = PlayerState.Run;
+                    else
+                        return_state = PlayerState.Run;
+                }
                 else
-                    state = PlayerState.Sneak;
+                {
+                    if (state != PlayerState.Attack)
+                        state = PlayerState.Sneak;
+                    else
+                        return_state = PlayerState.Sneak;
+                }
             }
             flipped = rigid_body.linearVelocityX < 0;
         }
         else if (state != PlayerState.Jump)
         {
             if (!crouched)
-                state = PlayerState.Idle;
+            {
+                if (state != PlayerState.Attack)
+                    state = PlayerState.Idle;
+                else
+                    return_state = PlayerState.Run;
+            }
             else
-                state = PlayerState.CrouchIdle;
+            {
+                if (state != PlayerState.Attack)
+                    state = PlayerState.CrouchIdle;
+                else
+                    return_state = PlayerState.Run;
+            }
         }
     }
 
@@ -181,6 +220,12 @@ public class PlayerControl : MonoBehaviour
 
     public void OnAttack(InputValue value)
     {
+        if (state != PlayerState.Attack)
+        {
+            return_state = state;
+            cur_frame = 0;
+            state = PlayerState.Attack;
+        }
     }
 
     public void OnLeave()

@@ -104,9 +104,9 @@ public class PlayerControl : MonoBehaviour
             }
             else
             {
+                cur_frame = (cur_frame + 1) % attack_frames.Length;
                 last_frame_time = Time.fixedTime;
                 sprite_renderer.sprite = attack_frames[cur_frame];
-                cur_frame = (cur_frame + 1) % attack_frames.Length;
             }
         }
         else if (state == PlayerState.Death && (cur_frame == 0 || Time.fixedTime - last_frame_time >= death_frame_time))

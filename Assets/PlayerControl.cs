@@ -26,6 +26,7 @@ public class PlayerControl : MonoBehaviour
     public Sprite[] sneak_frames;
     public Sprite[] crouch_idle_frames;
     public Sprite[] attack_frames;
+    public Sprite[] death_frames;
 
     Rigidbody2D rigid_body;
     SpriteRenderer sprite_renderer;
@@ -44,6 +45,7 @@ public class PlayerControl : MonoBehaviour
     float sneak_frame_time = 1f / 11f;
     float crouch_idle_frame_time = 1f / 11f;
     float attack_frame_time = 1f / 11f;
+    float death_frame_time = 1f / 6f;
     bool flipped = false;
     bool crouched = false;
     PlayerState state = PlayerState.Idle;
@@ -66,33 +68,33 @@ public class PlayerControl : MonoBehaviour
 
         if (state == PlayerState.Idle && Time.fixedTime - last_frame_time >= idle_frame_time)
         {
-            cur_frame = (cur_frame + 1) % idle_frames.Length;
             last_frame_time = Time.fixedTime;
             sprite_renderer.sprite = idle_frames[cur_frame];
+            cur_frame = (cur_frame + 1) % idle_frames.Length;
         }
         else if (state == PlayerState.Run && Time.fixedTime - last_frame_time >= run_frame_time)
         {
-            cur_frame = (cur_frame + 1) % run_frames.Length;
             last_frame_time = Time.fixedTime;
             sprite_renderer.sprite = run_frames[cur_frame];
+            cur_frame = (cur_frame + 1) % run_frames.Length;
         }
         else if (state == PlayerState.Jump && Time.fixedTime - last_frame_time >= jump_frame_time)
         {
-            cur_frame = (cur_frame + 1) % jump_frames.Length;
             last_frame_time = Time.fixedTime;
             sprite_renderer.sprite = jump_frames[cur_frame];
+            cur_frame = (cur_frame + 1) % jump_frames.Length;
         }
         else if (state == PlayerState.Sneak && Time.fixedTime - last_frame_time >= sneak_frame_time)
         {
-            cur_frame = (cur_frame + 1) % sneak_frames.Length;
             last_frame_time = Time.fixedTime;
             sprite_renderer.sprite = sneak_frames[cur_frame];
+            cur_frame = (cur_frame + 1) % sneak_frames.Length;
         }
         else if (state == PlayerState.CrouchIdle && Time.fixedTime - last_frame_time >= crouch_idle_frame_time)
         {
-            cur_frame = (cur_frame + 1) % crouch_idle_frames.Length;
             last_frame_time = Time.fixedTime;
             sprite_renderer.sprite = crouch_idle_frames[cur_frame];
+            cur_frame = (cur_frame + 1) % crouch_idle_frames.Length;
         }
         else if (state == PlayerState.Attack && Time.fixedTime - last_frame_time >= attack_frame_time)
         {
@@ -102,10 +104,19 @@ public class PlayerControl : MonoBehaviour
             }
             else
             {
-                cur_frame = (cur_frame + 1) % attack_frames.Length;
                 last_frame_time = Time.fixedTime;
                 sprite_renderer.sprite = attack_frames[cur_frame];
+                cur_frame = (cur_frame + 1) % attack_frames.Length;
             }
+        }
+        else if (state == PlayerState.Death && (cur_frame == 0 || Time.fixedTime - last_frame_time >= death_frame_time))
+        {
+            if (cur_frame >= death_frames.Length - 1)
+                SceneManager.LoadScene("Menu");
+
+            last_frame_time = Time.fixedTime;
+            sprite_renderer.sprite = death_frames[cur_frame];
+            cur_frame = cur_frame + 1;
         }
 
         last_state = state;
@@ -114,6 +125,9 @@ public class PlayerControl : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (state == PlayerState.Death)
+            return;
+
         rigid_body.AddForceX(-Mathf.Sign(rigid_body.linearVelocityX) * Mathf.Pow(rigid_body.linearVelocityX, 2) * drag);
         rigid_body.AddForceX(cur_move_vec.x * move_force);
         bool touching_ground = false;
@@ -220,11 +234,24 @@ public class PlayerControl : MonoBehaviour
 
     public void OnAttack(InputValue value)
     {
+        if (state == PlayerState.Death)
+            return;
+
         if (state != PlayerState.Attack)
         {
             return_state = state;
             cur_frame = 0;
+            last_frame_time = 0;
             state = PlayerState.Attack;
+        }
+    }
+
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("Spikes"))
+        {
+            cur_frame = 0;
+            state = PlayerState.Death;
         }
     }
 

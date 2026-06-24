@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.U2D.Animation;
+using UnityEngine.SceneManagement;
 
 enum PlayerState
 {
@@ -105,7 +106,7 @@ public class PlayerControl : MonoBehaviour
         rigid_body.GetContacts(contacts);
         foreach (var contact in contacts)
         {
-            if (contact.normal.y == 1)
+            if (contact.normal.y > .02)
             {
                 touching_ground = true;
                 break;
@@ -182,8 +183,8 @@ public class PlayerControl : MonoBehaviour
     {
     }
 
-    public void OnInteract(InputValue value)
+    public void OnLeave()
     {
+        SceneManager.LoadScene("Menu");
     }
-
 }
